@@ -273,34 +273,6 @@ function data = load_dataset(data)
       data.y{i} = labels;
     end
   
-  elseif isequal(data.name, 'imdb')
-    % Load the IMDB datasets
-    data.display_name = 'IMDB';
-    load([datadir, '/da_imdb.mat']);
-    data.domains = domain_names;
-    data.classes = [0,1];
-    data.preprocessing = {'zscore','joint-std'};
-    y = (y+1) / 2;
-    data.x = {};
-    data.y = {};
-    for i=1:3
-      data.x{i} = D(domains == i,:);
-      data.y{i} = y(domains == i,:);
-    end
-  elseif isequal(data.name, 'gaussian')
-    % Artificial gaussian data
-    if ~isfield(data,'num_features') data.num_features = 20; end
-    if ~isfield(data,'num_instances') data.num_instances = 100; end
-    if ~isfield(data,'similarity') data.similarity = 0.2; end
-    if ~isfield(data,'sigma') data.sigma = 0.5; end
-    [x1,y1,x2,y2] = generate_gaussian_dataset(data.num_instances, data.num_features, data.similarity, data.sigma);
-    data.x{1} = x1;
-    data.x{2} = x2;
-    data.y{1} = y1;
-    data.y{2} = y2;
-    data.domains = {'source','target'};
-    data.classes = [0,1];
-    data.display_name = 'Gaussian';
   elseif isfield(data, 'x')
     % assume already loaded
   else
