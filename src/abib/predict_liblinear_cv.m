@@ -1,10 +1,10 @@
-function [y_tgt, best_opts, label_order, s_tgt, model] = predict_liblinear_cv(x_src,y_src,x_tgt, varargin)
+function [y_tgt, best_opts, model] = predict_liblinear_cv(x_src,y_src,x_tgt, varargin)
   % Train a linear SVM, and use it to predict the labels of a test set.
   % Uses the liblinear svm implementation.
   % Uses cross-validation to pick C parameter.
   % 
   % Usage:
-  %   [y_test, best_opts] = predict_liblinear_cv(x_train, y_train, x_test, [options])
+  %   [y_test, best_opts, model] = predict_liblinear_cv(x_train, y_train, x_test, [options])
   % 
   % Options:
   %   'type',i       use the given classifier type (see liblinear documentation)

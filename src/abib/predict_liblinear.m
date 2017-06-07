@@ -1,4 +1,4 @@
-function [y_tgt,opts,label_order,s_tgt,model] = predict_liblinear(x_src,y_src,x_tgt, varargin)
+function [y_tgt,opts,model] = predict_liblinear(x_src,y_src,x_tgt, varargin)
   % Train a linear SVM, and use it to predict the labels of a test set.
   % Uses the liblinear svm implementation
   % 

@@ -26,11 +26,8 @@ function [y_tgt,ys_tgt] = predict_abib(x_src,y_src,x_tgt, varargin)
   if ~isfield(opts,'combine_models'), opts.combine_models = false; end
   
   % Classifier for the source
-  [y_tgt,best_opts_src,l1,s_tgt1,model_src] = opts.classifier(x_src, y_src, x_tgt, opts.classifier_opts_source{:});
+  [y_tgt,best_opts_src,model_src] = opts.classifier(x_src, y_src, x_tgt, opts.classifier_opts_source{:});
   y_tgt_from_src = y_tgt;
-  if size(s_tgt1,2) < length(l1)  
-    s_tgt1(:,end+1) = -sum(s_tgt1,2);
-  end
   if opts.use_source_C
     opts.classifier = @predict_liblinear;
     opts.classifier_opts = best_opts_src;
@@ -58,10 +55,7 @@ function [y_tgt,ys_tgt] = predict_abib(x_src,y_src,x_tgt, varargin)
       else
         which = ceil(rand(n,1)*n);
       end
-      [y_tgt1,~,l1,s_tgt1,model_src] = opts.classifier(x_src(which,:), y_src(which,:), x_tgt, opts.classifier_opts_source{:});
-      if size(s_tgt1,2) < length(l1)  
-        s_tgt1(:,end+1) = -sum(s_tgt1,2);
-      end
+      [y_tgt1,~,model_src] = opts.classifier(x_src(which,:), y_src(which,:), x_tgt, opts.classifier_opts_source{:});
     end
     
     % Classifier for the target
@@ -80,9 +74,9 @@ function [y_tgt,ys_tgt] = predict_abib(x_src,y_src,x_tgt, varargin)
       else
         which = ceil(rand(n,1)*n);
       end
-      [y_tgt2,~,~,~,model_tgt] = opts.classifier(x_tgt(which,:), y_tgt(which,:), x_tgt, opts.classifier_opts{:});
+      [y_tgt2,~,model_tgt] = opts.classifier(x_tgt(which,:), y_tgt(which,:), x_tgt, opts.classifier_opts{:});
     else
-      [y_tgt2,~,~,~,model_tgt] = opts.classifier(x_tgt, y_tgt, x_tgt, opts.classifier_opts{:});
+      [y_tgt2,~,model_tgt] = opts.classifier(x_tgt, y_tgt, x_tgt, opts.classifier_opts{:});
     end
     
     % Combined classification
