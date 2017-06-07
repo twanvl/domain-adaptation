@@ -28,6 +28,14 @@ If you use this code, please cite
 Additional information can be found at http://twanvl.nl/research/domain-adaptation-2017/
 The datasets used in the experiments can also be downloaded there.
 
+Comparison methods
+----
+The comparison methods can be downloaded from:
+* GFK: http://www-scf.usc.edu/~boqinggo/domainadaptation.html
+* FLDA: https://github.com/wmkouw/da-fl
+* Domain adaptation toolbox: https://github.com/viggin/domain-adaptation-toolbox
+* Coral: included in the source code
+* Subspace Alignment: included in the source code
 
 License
 ----
