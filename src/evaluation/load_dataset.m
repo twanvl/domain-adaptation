@@ -58,7 +58,7 @@ function data = load_dataset(data)
     end
     data.domains = {'books', 'dvd', 'electronics', 'kitchen'};
     data.classes = [0,1];
-    data.preprocessing = {'zscore','joint-std'};
+    data.preprocessing = {'joint-std','none'};
     data.x = {};
     data.y = {};
     for i = 1:4
@@ -136,7 +136,7 @@ function data = load_dataset(data)
     data.display_name = 'Amazon standard samples';
     data.domains = {'books', 'dvd', 'elec', 'kitchen'};
     data.classes = [0,1];
-    data.preprocessing = {'zscore','joint-std'};
+    data.preprocessing = {'joint-std','none'};
     data.num_repetitions = 20;
     data.x = {};
     data.y = {};
