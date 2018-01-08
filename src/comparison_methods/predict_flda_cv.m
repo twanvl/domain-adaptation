@@ -3,7 +3,11 @@ function y_tgt = predict_flda_cv(x_src, y_src, x_tgt, varargin)
   % 
   % Use cross-validation on the source domain to pick lambda
   
-  opts = struct(varargin{:});
+  if length(varargin) == 1 && isstruct(varargin{1})
+    opts = varargin{1};
+  else
+    opts = struct(varargin{:});
+  end
   if ~isfield(opts,'lambdas'), opts.lambdas = 10.^(-4:0.5:5); end
   if ~isfield(opts,'distribution'), opts.distribution = 'dropout'; end % dropout or blankout
   if ~isfield(opts,'loss'), opts.loss = 'log'; end % qd or log

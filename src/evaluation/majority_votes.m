@@ -8,6 +8,9 @@ function es = majority_votes(ys)
   % Except that the behavior is slightly different in the case of ties.
   % With ties, mode prefers lower class labels
   % we instead give the 'previous' answer, i.e. mode(ys(i,1:j-1))
+  
+  % This implementation keeps a running count of the occurence of each predicted label,
+  % which makes it more efficient then repeated calls to mode.
   minc = min(ys(:));
   maxc = max(ys(:));
   n = size(ys,1);

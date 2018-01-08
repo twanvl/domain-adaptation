@@ -25,7 +25,7 @@ function run_on(method, data, preprocessing, fast)
   mean_margin = [];
   mean_margin_ensemble = [];
   skipped = false;
-  for src_tgt = 1:data.num_domain_pairs
+  for src_tgt = 1:size(data.domain_pairs,1)
     src = data.domain_pairs(src_tgt,1);
     tgt = data.domain_pairs(src_tgt,2);
     % Cache?

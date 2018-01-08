@@ -1,7 +1,13 @@
-function Ytt = predict_coral(Xr,Yr,Xtt)
+function Ytt = predict_coral(Xr,Yr,Xtt, varargin)
   % CORAL
   %
   % Code adapted from https://github.com/VisionLearningGroup/CORAL
+  
+  if length(varargin) == 1 && isstruct(varargin{1})
+    opts = varargin{1};
+  else
+    opts = struct(varargin{:});
+  end
   
   % don't run on high dimensional data
   if size(Xr,2) > 10000

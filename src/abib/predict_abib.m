@@ -13,7 +13,7 @@ function [y_tgt,ys_tgt] = predict_abib(x_src,y_src,x_tgt, varargin)
   if ~isfield(opts,'num_iterations'), opts.num_iterations = 500; end
   if ~isfield(opts,'alpha'),  opts.alpha = 0.5; end
   if ~isfield(opts,'classifier'), opts.classifier = @predict_liblinear_cv; end
-  if ~isfield(opts,'classifier_opts'), opts.classifier_opts = {}; end
+  if ~isfield(opts,'classifier_opts'), opts.classifier_opts = struct(); end
   if ~isfield(opts,'classifier_opts_source'), opts.classifier_opts_source = opts.classifier_opts; end
   if ~isfield(opts,'use_source_C'), opts.use_source_C = false; end
   if ~isfield(opts,'use_target_C'), opts.use_target_C = true; end
@@ -26,13 +26,13 @@ function [y_tgt,ys_tgt] = predict_abib(x_src,y_src,x_tgt, varargin)
   if ~isfield(opts,'combine_models'), opts.combine_models = false; end
   
   % Classifier for the source
-  [y_tgt,best_opts_src,model_src] = opts.classifier(x_src, y_src, x_tgt, opts.classifier_opts_source{:});
+  [y_tgt,best_opts_src,model_src] = opts.classifier(x_src, y_src, x_tgt, opts.classifier_opts_source);
   y_tgt_from_src = y_tgt;
   if opts.use_source_C
     opts.classifier = @predict_liblinear;
     opts.classifier_opts = best_opts_src;
   elseif opts.use_target_C
-    [~, best_opts_tgt] = opts.classifier(x_tgt,y_tgt,[], opts.classifier_opts{:});
+    [~, best_opts_tgt] = opts.classifier(x_tgt,y_tgt,[], opts.classifier_opts);
     opts.classifier = @predict_liblinear;
     opts.classifier_opts = best_opts_tgt;
   end
@@ -55,7 +55,7 @@ function [y_tgt,ys_tgt] = predict_abib(x_src,y_src,x_tgt, varargin)
       else
         which = ceil(rand(n,1)*n);
       end
-      [y_tgt1,~,model_src] = opts.classifier(x_src(which,:), y_src(which,:), x_tgt, opts.classifier_opts_source{:});
+      [y_tgt1,~,model_src] = opts.classifier(x_src(which,:), y_src(which,:), x_tgt, opts.classifier_opts_source);
     end
     
     % Classifier for the target
@@ -74,9 +74,9 @@ function [y_tgt,ys_tgt] = predict_abib(x_src,y_src,x_tgt, varargin)
       else
         which = ceil(rand(n,1)*n);
       end
-      [y_tgt2,~,model_tgt] = opts.classifier(x_tgt(which,:), y_tgt(which,:), x_tgt, opts.classifier_opts{:});
+      [y_tgt2,~,model_tgt] = opts.classifier(x_tgt(which,:), y_tgt(which,:), x_tgt, opts.classifier_opts);
     else
-      [y_tgt2,~,model_tgt] = opts.classifier(x_tgt, y_tgt, x_tgt, opts.classifier_opts{:});
+      [y_tgt2,~,model_tgt] = opts.classifier(x_tgt, y_tgt, x_tgt, opts.classifier_opts);
     end
     
     % Combined classification

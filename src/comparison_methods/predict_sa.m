@@ -11,7 +11,11 @@ function y_tgt = predict_sa(x_src, y_src, x_tgt, varargin)
   % year = {2013},
   % } 
   
-  opts = struct(varargin{:});
+  if length(varargin) == 1 && isstruct(varargin{1})
+    opts = varargin{1};
+  else
+    opts = struct(varargin{:});
+  end
   if ~isfield(opts,'svm_sqrt'), opts.svm_sqrt = false; end;
   if ~isfield(opts,'subspace_dim'), opts.subspace_dim = 80; end;
   

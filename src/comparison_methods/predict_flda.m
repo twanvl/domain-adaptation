@@ -3,7 +3,11 @@ function y_tgt = predict_flda(x_src, y_src, x_tgt, varargin)
   % 
   % Based on code from https://github.com/wmkouw/da-fl
   
-  opts = struct(varargin{:});
+  if length(varargin) == 1 && isstruct(varargin{1})
+    opts = varargin{1};
+  else
+    opts = struct(varargin{:});
+  end
   if ~isfield(opts,'lambda'), opts.lambda = 1; end
   if ~isfield(opts,'distribution'), opts.distribution = 'dropout'; end % dropout or blankout
   if ~isfield(opts,'loss'), opts.loss = 'log'; end % qd or log

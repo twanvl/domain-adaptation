@@ -12,13 +12,19 @@ function out = encode_parameters(x)
     end
   elseif isstruct(x)
     out = '';
-    fields = fieldnames(x)
+    fields = fieldnames(x);
     for i=1:numel(fields)
       if i>1, out = [out,'-']; end;
       out = [out,fields{i},'=',encode_parameters(getfield(x,fields{i}))];
     end
   elseif ischar(x)
     out = x;
+  elseif isnumeric(x) && ~isscalar(x)
+    out = '';
+    for i=1:numel(x)
+      if i>1, out = [out,',']; end;
+      out = [out,encode_parameters(x(i))];
+    end
   elseif isscalar(x) && isnumeric(x)
     out = sprintf('%g',x);
   elseif isscalar(x) && islogical(x)

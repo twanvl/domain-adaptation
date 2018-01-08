@@ -1,8 +1,12 @@
-function y_tgt = predict_GFK(x_src, y_src, x_tgt, varargin)
+function y_tgt = predict_gfk(x_src, y_src, x_tgt, varargin)
   % GFK
   % See http://www-scf.usc.edu/~boqinggo/domainadaptation.html
   
-  opts = struct(varargin{:});
+  if length(varargin) == 1 && isstruct(varargin{1})
+    opts = varargin{1};
+  else
+    opts = struct(varargin{:});
+  end
   if ~isfield(opts,'use_pls'), opts.use_pls = false; end;
   if ~isfield(opts,'d'), opts.d = 10; end;
   if ~isfield(opts,'svm'), opts.svm = false; end;
