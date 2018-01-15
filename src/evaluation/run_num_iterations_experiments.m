@@ -1,92 +1,120 @@
-function run_num_iterations_experiments(fast)
-  if nargin < 1, fast = false; end
-  oversamples = [1,0.2,5];
-  for ios=1:numel(oversamples);
-    os = oversamples(ios);
-    method.filename = sprintf('icb-%g', os);
-    method.method = @predict_abib;
-    method.args = {'num_iterations',2000, 'oversample',os};
-    
-    preprocessing = 'joint-std';
-    
-    run_on(method, 'amazon', preprocessing, fast);
-    run_on(method, 'office-caltech', preprocessing, fast);
-    run_on(method, 'office-vgg-sumpool-fc6', preprocessing, fast);
+function run_num_iterations_experiments(varargin)
+  % Experiment to show the influence of the number of iterations on the results
+  
+  % Argument handling
+  if length(varargin) == 1 && isstruct(varargin{1})
+    opts = varargin{1};
+  else
+    opts = struct(varargin{:});
   end
+  if ~isfield(opts,'verbose'), opts.verbose = true; end
+  if ~isfield(opts,'quick'), opts.quick = false; end
+  if ~isfield(opts,'use_cache'), opts.use_cache = true; end
+  if ~isfield(opts,'cache_path'), opts.cache_path = '~/cache/domain-adaptation'; end
+  if ~isfield(opts,'output_path'), opts.output_path = 'out/tables/num-iterations'; end
+  if ~isfield(opts,'num_repeats'), opts.num_repeats = 200; end
+  if ~isfield(opts,'num_iterations'), opts.num_iterations = [1,5:5:100]; end % parameter values to try
+  
+  results = run_on(load_dataset('amazon'), opts);
+  write_results(results, opts);
+  results = run_on(load_dataset('office-caltech'), opts);
+  write_results(results, opts);
 end
 
-function run_on(method, data, preprocessing, fast)
-  % load dataset
-  out_path = 'out';
-  cache_path = '~/cache/domain-adaptation';
-  data = load_dataset(data);
-  accs = [];
-  accs_ensemble = [];
-  mean_margin = [];
-  mean_margin_ensemble = [];
-  skipped = false;
-  for src_tgt = 1:size(data.domain_pairs,1)
+function results = run_on(data, opts)
+  results = struct();
+  results.data = data;
+  results.data.x = [];
+  results.data.y = [];
+  results.y_test    = cell(data.num_domain_pairs,1);
+  results.ys        = cell(data.num_domain_pairs,1);
+  results.mean_accs = cell(data.num_domain_pairs,1);
+  results.svm_opts  = cell(data.num_domain_pairs,1);
+  results.losses    = cell(data.num_domain_pairs,1);
+  
+  for src_tgt = 1:data.num_domain_pairs
     src = data.domain_pairs(src_tgt,1);
     tgt = data.domain_pairs(src_tgt,2);
-    % Cache?
-    srep = '';
-    filename = sprintf('%s/num-iter-%s-%s-%s-%s-%s%s.mat', cache_path, data.cache_filename, preprocessing, data.domains{src}, data.domains{tgt}, srep, method.filename);
-    % prepare data
-    printf('preparing %d %d         %s                              \r', src,tgt,filename);
-    x_train = data.x{src};
-    x_test  = data.x{tgt};
-    y_train = data.y{src};
-    y_test  = data.y{tgt};
-    if exist(filename,'file')
-      % Re-use cached value
+    filename = sprintf('%s/num-iterations-%s-%s-%s-%s.mat', opts.cache_path, data.cache_filename, data.preprocessing, data.domains{src}, data.domains{tgt});
+    
+    if opts.use_cache && exist(filename,'file')
+      if opts.verbose
+        printf('%s %s->%s: cached\n', data.name, data.domains{src}(1), data.domains{tgt}(1));
+      end
       load(filename);
-      if fast
-        skipped = true;
-        continue;
+    elseif opts.quick
+      if opts.verbose
+        printf('%s %s->%s: skipped\n', data.name, data.domains{src}(1), data.domains{tgt}(1));
       end
+      ys = [];
+      y_test = [];
+      svm_opts = struct();
+      losses = [];
     else
-      printf('running %d %d                                       \n', src,tgt);
-      [x_train,x_test] = preprocess(x_train, y_train, x_test, preprocessing);
-      [y,ys] = method.method(x_train, y_train, x_test, method.args{:});
-      save(filename,'-v7','ys');
-    end
-    % calculate accuracies
-    acc = mean(ys == repmat(y_test,1,size(ys,2)), 1);
-    if 1
-      % fast calculation
-      ys_ensemble = majority_votes(ys);
-      acc_ensemble = mean(ys_ensemble == repmat(y_test,1,size(ys,2)), 1);
-    else
-      % slow calculation
-      acc_ensemble = zeros(size(acc));
-      for k=1:size(ys,2)
-        y = mode(ys(:,1:k),2);
-        acc_ensemble(k) = mean(y == y_test);
+      if opts.verbose
+        printf('%s %s->%s: running\n', data.name, data.domains{src}(1), data.domains{tgt}(1));
       end
+      x_train = data.x{src};
+      x_test  = data.x{tgt};
+      y_train = data.y{src};
+      y_test  = data.y{tgt};
+      
+      [x_train_pp,x_test_pp] = preprocess(x_train, y_train, x_test, data.preprocessing);
+      
+      [~,svm_opts] = predict_liblinear_cv(x_train_pp,y_train,x_test_pp); % do CV only once
+      
+      num_iterations = opts.num_iterations;
+      ys        = zeros(size(y_test,1), numel(opts.num_iterations));
+      mean_accs = zeros(size(y_test,1), numel(opts.num_iterations));
+      losses    = zeros(1, numel(opts.num_iterations));
+      for i=1:numel(opts.num_iterations)
+        if opts.verbose
+          printf('%s %s->%s %d/%d   \r', data.name, data.domains{src}(1), data.domains{tgt}(1), i, numel(opts.num_iterations));
+        end
+        [y,ysi] = predict_adrem(x_train_pp,y_train,x_test_pp, 'num_repeats', opts.num_repeats, 'num_iterations',num_iterations(i), 'classifier',@predict_liblinear, 'classifier_opts',svm_opts);
+        ys(:,i) = y;
+        ysi = cell2mat(cellfun(@(x)x(:,end),ysi,'UniformOutput',false)');
+        accs = bsxfun(@eq, ysi, y_test);
+        mean_accs(:,i) = mean(accs,2);
+        losses(i) = tsvm_loss(x_train_pp, y_train, x_test_pp, y_test, [], svm_opts);
+      end
+      save(filename,'-v7','svm_opts','num_iterations','y_test','ys','mean_accs','losses');
     end
-    accs(end+1,:) = acc;
-    accs_ensemble(end+1,:) = acc_ensemble;
-    % save
-    % write to file
-    outfile = sprintf('%s/plot-accuracy-%s-%s-%s-%s-%s', out_path, method.filename, data.filename, preprocessing, data.domains{src}, data.domains{tgt});
-    write_result_plot([outfile '.tex'], acc);
-    write_result_plot([outfile '-ensemble.tex'], acc_ensemble);
-  end
-  if ~skipped
-    outfile = sprintf('%s/plot-accuracy-%s-%s-%s-avg', out_path, method.filename, data.filename, preprocessing);
-    write_result_plot([outfile '.tex'], mean(accs,1));
-    write_result_plot([outfile '-ensemble.tex'], mean(accs_ensemble,1));
+    results.num_iterations{src_tgt} = num_iterations;
+    results.y_test{src_tgt} = y_test;
+    results.ys{src_tgt} = ys;
+    results.mean_accs{src_tgt} = mean_accs;
+    results.svm_opts{src_tgt} = svm_opts;
+    results.losses{src_tgt} = losses;
   end
 end
 
-function write_result_plot(filename, accs, step)
-  if nargin<3, step=5; end;
-  fprintf('Writing %s     \r',filename);
-  file = fopen(filename,'wt');
-  fprintf(file,'\\addplot+[] coordinates{');
-  for i=1:step:numel(accs)
-    fprintf(file,'(%f,%f) ', i, 100*accs(i));
+function write_results(results, opts)
+  data = results.data;
+  for src_tgt = 1:data.num_domain_pairs
+    src = data.domain_pairs(src_tgt,1);
+    tgt = data.domain_pairs(src_tgt,2);
+    if isempty(results.ys{src_tgt}), continue; end;
+    filename = sprintf('%s/%s-%s-%s.dat', opts.output_path, data.name, data.domains{src}, data.domains{tgt});
+    fprintf('%s\n',filename);
+
+    num_iterations = results.num_iterations{src_tgt};
+    y_tgt = results.y_test{src_tgt};
+    ys    = results.ys{src_tgt};
+    acc   = bsxfun(@eq, y_tgt, ys);
+    mean_acc = results.mean_accs{src_tgt};
+    losses = results.losses{src_tgt};
+    
+    f = fopen(filename,'wt');
+    fprintf(f,'num_iterations');
+    fprintf(f,'  ensemble_acc mean_acc');
+    fprintf(f,'\n');
+    for i=1:length(num_iterations)
+      fprintf(f, '%d', num_iterations(i));
+      fprintf(f, '  %f %f', mean(acc(:,i)), mean(mean_acc(:,i)));
+      fprintf(f, '\n');
+    end
+    fclose(f);
   end
-  fprintf(file,'};\n');
-  fclose(file);
 end
+
