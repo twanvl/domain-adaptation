@@ -18,7 +18,7 @@ function [y_tgt,ys_tgt,models] = predict_adrem(x_src,y_src,x_tgt, varargin)
   if ~isfield(opts,'class_balance'), opts.class_balance = ones(1,numel(classes)); end
   
   % Classifier for the source
-  [y_tgt_src,best_opts_src] = opts.classifier(x_src, y_src, x_tgt, opts.classifier_opts);
+  [y_tgt_src,best_opts_src,model_src] = opts.classifier(x_src, y_src, x_tgt, opts.classifier_opts);
   if opts.use_source_C
     opts.classifier = @predict_liblinear;
     opts.classifier_opts = best_opts_src;
@@ -29,12 +29,19 @@ function [y_tgt,ys_tgt,models] = predict_adrem(x_src,y_src,x_tgt, varargin)
     ys_tgt = cell(opts.num_repeats, 1);
   end
   if nargout >= 3
-    models = cell(opts.num_repeats, opts.num_iterations);
+    models = cell(opts.num_repeats, opts.num_iterations+1);
   end
   for rep = 1:opts.num_repeats
     % Start from source classification
     y_tgt = y_tgt_src;
-    ys_tgt{rep} = zeros(n_tgt, opts.num_iterations);
+    if nargout >= 2
+      ys_tgt{rep} = zeros(n_tgt, opts.num_iterations+1);
+      ys_tgt{rep}(:,1) = y_tgt_src;
+    end
+    if nargout >= 3
+      models{rep,1} = model_src;
+    end
+    
     for it = 1:opts.num_iterations
       n_tgt_sample = n_tgt * (opts.initial + (1-opts.initial)*(it / opts.num_iterations));
       
@@ -63,10 +70,10 @@ function [y_tgt,ys_tgt,models] = predict_adrem(x_src,y_src,x_tgt, varargin)
       [y_tgt,~,model] = opts.classifier(x_train, y_train, x_tgt, opts.classifier_opts);
       
       if nargout >= 2
-        ys_tgt{rep}(:,it) = y_tgt;
+        ys_tgt{rep}(:,it+1) = y_tgt;
       end
       if nargout >= 3
-        models{rep,it} = model;
+        models{rep,it+1} = model;
       end
     end
     ys_reps(:,rep) = y_tgt;
