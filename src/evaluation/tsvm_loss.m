@@ -33,10 +33,11 @@ function loss = tsvm_loss(x_src,y_src, x_tgt,y_tgt, model, varargin)
   
   if opts.balanced
     % class weights for target part
-    indicator = sparse(1:size(s,1), y_idx(n_src+1:end), 1, size(y,1),length(model.Label));
+    indicator = sparse(1:n_tgt, y_idx(n_src+1:end), 1, n_tgt,length(model.Label));
     class_size = full(sum(indicator));
     cw = n_tgt ./ (class_size + 1e-2) / length(model.Label);
-    w = [repmat(1,n,1); cw(y_idx(n_src+1:end))];
+    cw_tgt = cw(y_idx(n_src+1:end));
+    w = [repmat(1,n_src,1); cw_tgt(:)];
   else
     w = 1;
   end
