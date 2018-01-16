@@ -39,14 +39,14 @@ function run_and_write_tables(dataset, opts)
     
   elseif isequal(dataset,'office-caltech') || isequal(dataset,'office-caltech-standard') || isequal(dataset,'office-caltech-repeated')
     % Office Caltech (standard)
-    data = cellfun(@(x)load_dataset(dataset,x), {'surf','vgg','vgg16','resnet50','inception_resnet_v2'}, 'UniformOutput',false);
+    data = cellfun(@(x)load_dataset(dataset,x), {'surf','vgg16','resnet50','inception_resnet_v2'}, 'UniformOutput',false);
     methods = [baselines, dummy_methods('SA','TCA','GFK'), all_methods_literature('include_gfk',false, 'include_tca',false), our_methods];
     results = run_methods(data, methods, opts);
     write_table(sprintf('%s/%s.tex',opts.output_path,dataset), results);
     
   elseif isequal(dataset,'office')
     % Office 31 (standard)
-    data = cellfun(@(x)load_dataset(dataset,x), {'decaf','vgg','vgg16','resnet50','inception_resnet_v2','raw'}, 'UniformOutput',false);
+    data = cellfun(@(x)load_dataset(dataset,x), {'decaf','vgg16','resnet50','inception_resnet_v2','raw'}, 'UniformOutput',false);
     data{end}.display_name = 'Deep Neural Networks';
     dummys = dummy_methods('SA','TCA','GFK','CORAL','DLID','DDC','DAN','DANN','BP','TDS');
     methods = [baselines, dummys, all_methods_literature(), our_methods];
