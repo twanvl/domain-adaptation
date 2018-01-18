@@ -132,7 +132,7 @@ function data = load_amazon(datadir, data, protocol)
     % Word frequency features
     % This is prepared from files from http://www.cs.jhu.edu/~mdredze/datasets/sentiment/
     data.cache_filename = data.name;
-    data.display_name = '400 features';
+    data.display_name = 'All features';
     load([datadir.base, '/amazon.mat'], 'x','y','d');
     if ~isfield(data,'preprocessing')
       data.preprocessing = 'joint-std';
@@ -147,7 +147,7 @@ function data = load_amazon(datadir, data, protocol)
     % Load the amazon dataset with 400 features,
     % from landmark paper; Gong, B.; Grauman, K.; and Sha, F.; 2013
     data.cache_filename = 'amazon-400';
-    data.display_name = 'All features';
+    data.display_name = '400 features';
     if ~isfield(data,'preprocessing')
       data.preprocessing = 'zscore';
     end
