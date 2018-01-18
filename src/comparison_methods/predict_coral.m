@@ -32,11 +32,12 @@ function predicted_label_values = SVM_predict(trainset, M,testlabelsref,Sim,trai
 
   C = [0.001 0.01 0.1 1.0 10 100 1000 10000];
   parfor i = 1:size(C,2)
-    model(i) = svmtrain(trainlabels, double(Sim_Trn), sprintf('-t 4 -c %g -v 2 -q',C(i)));
+    % note: added -h 0, otherwise svmtrain sometimes hangs
+    model(i) = svmtrain(trainlabels, double(Sim_Trn), sprintf('-t 4 -c %g -v 2 -q -h 0',C(i)));
   end
   [val indx]=max(model);
   CVal = C(indx);
-  model = svmtrain(trainlabels, Sim_Trn, sprintf('-t 4 -c %g -q',CVal));
+  model = svmtrain(trainlabels, Sim_Trn, sprintf('-t 4 -c %g -q -h 0',CVal));
   [predicted_label_values] = svmpredict(testlabelsref, Sim, model);
 end
 
