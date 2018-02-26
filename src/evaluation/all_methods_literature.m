@@ -8,8 +8,8 @@ function methods = all_methods_literature(varargin)
   end
   if ~isfield(opts,'toolbox_sa') opts.toolbox_sa = false; end
   if ~isfield(opts,'include_sa') opts.include_sa = true; end
-  if ~isfield(opts,'include_tca') opts.include_tca = true; end
-  if ~isfield(opts,'include_gfk') opts.include_gfk = true; end
+  if ~isfield(opts,'include_tca') opts.include_tca = false; end
+  if ~isfield(opts,'include_gfk') opts.include_gfk = false; end
   if ~isfield(opts,'include_flda') opts.include_flda = true; end
   
   methods = {};

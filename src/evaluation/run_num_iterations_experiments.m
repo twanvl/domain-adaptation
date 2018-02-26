@@ -19,6 +19,8 @@ function run_num_iterations_experiments(varargin)
   write_results(results, opts);
   results = run_on(load_dataset('office-caltech'), opts);
   write_results(results, opts);
+  results = run_on(load_dataset('office-caltech','resnet50'), opts);
+  write_results(results, opts);
 end
 
 function results = run_on(data, opts)
@@ -95,8 +97,6 @@ function write_results(results, opts)
     src = data.domain_pairs(src_tgt,1);
     tgt = data.domain_pairs(src_tgt,2);
     if isempty(results.ys{src_tgt}), continue; end;
-    filename = sprintf('%s/%s-%s-%s.dat', opts.output_path, data.name, data.domains{src}, data.domains{tgt});
-    fprintf('%s\n',filename);
 
     num_iterations = results.num_iterations{src_tgt};
     y_tgt = results.y_test{src_tgt};
@@ -105,6 +105,8 @@ function write_results(results, opts)
     mean_acc = results.mean_accs{src_tgt};
     losses = results.losses{src_tgt};
     
+    filename = sprintf('%s/%s-%s-%s.dat', opts.output_path, data.cache_filename, data.domains{src}, data.domains{tgt});
+    fprintf('%s\n',filename);
     f = fopen(filename,'wt');
     fprintf(f,'num_iterations');
     fprintf(f,'  ensemble_acc mean_acc');
@@ -116,5 +118,31 @@ function write_results(results, opts)
     end
     fclose(f);
   end
+  
+  % Collect stats, only for common 'num_iterations'
+  mean_acc = mean(results.mean_accs{1});
+  num_iterations = results.num_iterations{1};
+  for src_tgt = 2:data.num_domain_pairs
+    ma = mean(results.mean_accs{src_tgt});
+    ni = results.num_iterations{src_tgt};
+    [num_iterations,ia,ib] = intersect(num_iterations,ni);
+    mean_acc = [mean_acc(:,ia); ma(:,ib)];
+  end
+  size(mean_acc)
+  
+  filename = sprintf('%s/%s-avg.dat', opts.output_path, data.cache_filename);
+  fprintf('%s\n',filename);
+  f = fopen(filename,'wt');
+  fprintf(f,'num_iterations');
+  fprintf(f,'  mean_acc');
+  fprintf(f,'\n');
+  %cell2mat(cellfun(@(ma)size(ma),results.mean_accs, 'UniformOutput',false))
+  %mean_acc = cell2mat(cellfun(@(ma)mean(ma,1),results.mean_accs, 'UniformOutput',false));
+  for i=1:length(num_iterations)
+    fprintf(f, '%d', num_iterations(i));
+    fprintf(f, '  %f %f', mean(mean_acc(:,i)));
+    fprintf(f, '\n');
+  end
+  fclose(f);
 end
 

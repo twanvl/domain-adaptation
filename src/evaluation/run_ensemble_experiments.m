@@ -22,6 +22,8 @@ function run_ensemble_experiments(varargin)
   write_results(results, opts);
   results = run_on(load_dataset('office-caltech'), opts);
   write_results(results, opts);
+  results = run_on(load_dataset('office-caltech','resnet50'), opts);
+  write_results(results, opts);
 end
 
 function results = run_on(data, opts)
@@ -107,11 +109,14 @@ function write_results(results, opts)
         [mean_acc, std_acc] = ensemble_accuracy(y_tgt, ys, ensemble_sizes, opts.num_samples);
         save(filename,'-v7','ensemble_sizes','mean_acc','std_acc');
       end
+      mean_accs(src_tgt,:) = mean_acc;
+      std_accs(src_tgt,:) = std_acc;
     end
     if opts.include_exact,       [mean_acc2, std_acc2] = ensemble_accuracy_exact(y_tgt, ys, ensemble_sizes); end
     if opts.include_sampled_top, [mean_acc3, std_acc3] = ensemble_accuracy(y_tgt, ys, ensemble_sizes, opts.num_samples, losses, 0.5); end
     
-    filename = sprintf('%s/%s-%s-%s.dat', opts.output_path, data.name, data.domains{src}, data.domains{tgt});
+    
+    filename = sprintf('%s/%s-%s-%s.dat', opts.output_path, data.cache_filename, data.domains{src}, data.domains{tgt});
     fprintf('%s\n',filename);
     f = fopen(filename,'wt');
     fprintf(f,'size');
@@ -128,6 +133,24 @@ function write_results(results, opts)
     end
     fclose(f);
   end
+  
+  % Average over domains
+  filename = sprintf('%s/%s-avg.dat', opts.output_path, data.cache_filename);
+  fprintf('%s\n',filename);
+  f = fopen(filename,'wt');
+  fprintf(f,'size');
+  if opts.include_sampled
+    mean_acc = mean(mean_accs,1);
+    std_acc = mean(std_accs,1);
+    fprintf(f,'  mean_acc std_acc');
+  end
+  fprintf(f,'\n');
+  for i=1:length(ensemble_sizes)
+    fprintf(f, '%d', ensemble_sizes(i));
+    if opts.include_sampled,     fprintf(f, '  %f %f', mean_acc(i), std_acc(i)); end
+    fprintf(f, '\n');
+  end
+  fclose(f);
 end
 
 function [mean_acc, std_acc] = ensemble_accuracy(y_tgt, ys, ensemble_sizes, num_sample, losses, top_loss)

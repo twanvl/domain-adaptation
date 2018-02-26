@@ -39,17 +39,20 @@ function run_and_write_tables(dataset, opts)
     
   elseif isequal(dataset,'office-caltech') || isequal(dataset,'office-caltech-standard') || isequal(dataset,'office-caltech-repeated')
     % Office Caltech (standard)
-    data = cellfun(@(x)load_dataset(dataset,x), {'surf','vgg16','resnet50','inception_resnet_v2'}, 'UniformOutput',false);
-    methods = [baselines, dummy_methods('SA','TCA','GFK'), all_methods_literature('include_gfk',false, 'include_tca',false), our_methods];
+    data = cellfun(@(x)load_dataset(dataset,x), {'surf','resnet50'}, 'UniformOutput',false);
+    methods = [baselines, dummy_methods('SA'), all_methods_literature('include_gfk',false, 'include_tca',false), our_methods];
     results = run_methods(data, methods, opts);
     write_table(sprintf('%s/%s.tex',opts.output_path,dataset), results);
     
   elseif isequal(dataset,'office')
     % Office 31 (standard)
-    data = cellfun(@(x)load_dataset(dataset,x), {'decaf','vgg16','resnet50','inception_resnet_v2','raw'}, 'UniformOutput',false);
-    data{end}.display_name = 'Deep Neural Networks';
-    dummys = dummy_methods('SA','TCA','GFK','CORAL','DLID','DDC','DAN','DANN','BP','TDS');
-    methods = [baselines, dummys, all_methods_literature(), our_methods];
+    data = cellfun(@(x)load_dataset(dataset,x), {'decaf','resnet50','raw-resnet'}, 'UniformOutput',false);
+    %data{end}.display_name = 'Deep Neural Networks';
+    data{end}.display_name = 'Deep Neural Networks (based on ResNet)';
+    %dummys = dummy_methods('SA','CORAL','DLID','DDC','DAN','DANN','BP','RTN','TDS');
+    dummys1 = dummy_methods('SA');
+    dummys2 = dummy_methods('CORAL','DDC','DAN','RTN','RevGrad','JAN-A');
+    methods = [baselines, dummys1, all_methods_literature(), dummys2, our_methods];
     results = run_methods(data, methods, opts);
     write_table(sprintf('%s/%s.tex',opts.output_path,dataset), results);
     
@@ -60,8 +63,9 @@ function run_and_write_tables(dataset, opts)
     data{2} = load_dataset(dataset, 'decaf-fc7','truncate,joint-std');
     data{1}.display_name = 'DECAF-fc7 features';
     data{2}.display_name = 'DECAF-fc7 features, rectified';
-    dummys = dummy_methods('SA','TCA','GFK','CORAL');
-    methods = [baselines, dummys, all_methods_literature(), our_methods];
+    dummys1 = dummy_methods('SA');
+    dummys2 = dummy_methods('CORAL');
+    methods = [baselines, dummys1, all_methods_literature(), dummys2, our_methods];
     results = run_methods(data, methods, opts);
     write_table(sprintf('%s/%s.tex',opts.output_path,dataset), results);
   end

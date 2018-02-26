@@ -348,7 +348,7 @@ function data = load_office(datadir, data, protocol)
   elseif isequal(data.features, 'inception_resnet_v2')
     data = load_office_deep(datadir,data,'inception_resnet_v2');
     data.display_name = 'Inception-ResNet V2 features';
-  elseif isequal(data.features, 'raw')
+  elseif isequal(data.features, 'raw') || isequal(data.features, 'raw-resnet')
     % Don't actually load anything, this is included for results_from_papers that use raw features
     data.x = {[],[],[]};
     data.y = {[],[],[]};
