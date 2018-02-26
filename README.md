@@ -1,4 +1,4 @@
-Biased Bagging for Unsupervised Domain Adaptation
+Domain Adaptation with Randomized Expectation Maximization
 --------------------------
 
 This is the implementation of the AdREM method for domain adaptation, plus accompanying code to test it on a variety of datasets.
