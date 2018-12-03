@@ -39,16 +39,18 @@ function run_and_write_tables(dataset, opts)
     
   elseif isequal(dataset,'office-caltech') || isequal(dataset,'office-caltech-standard') || isequal(dataset,'office-caltech-repeated')
     % Office Caltech (standard)
-    data = cellfun(@(x)load_dataset(dataset,x), {'surf','resnet50'}, 'UniformOutput',false);
+    data = cellfun(@(x)load_dataset(dataset,x), {'surf','resnet50-no-augment'}, 'UniformOutput',false);
+    data{2}.display_name = 'ResNet 50';
     methods = [baselines, dummy_methods('SA'), all_methods_literature('include_gfk',false, 'include_tca',false), our_methods];
     results = run_methods(data, methods, opts);
     write_table(sprintf('%s/%s.tex',opts.output_path,dataset), results);
     
   elseif isequal(dataset,'office')
     % Office 31 (standard)
-    data = cellfun(@(x)load_dataset(dataset,x), {'decaf','resnet50','raw-resnet'}, 'UniformOutput',false);
+    data = cellfun(@(x)load_dataset(dataset,x), {'decaf','resnet50-no-augment','raw-resnet'}, 'UniformOutput',false);
     %data{end}.display_name = 'Deep Neural Networks';
-    data{end}.display_name = 'Deep Neural Networks (based on ResNet)';
+    data{2}.display_name = 'ResNet 50';
+    data{3}.display_name = 'Deep Neural Networks (based on ResNet)';
     %dummys = dummy_methods('SA','CORAL','DLID','DDC','DAN','DANN','BP','RTN','TDS');
     dummys1 = dummy_methods('SA');
     dummys2 = dummy_methods('CORAL','DDC','DAN','RTN','RevGrad','JAN-A');

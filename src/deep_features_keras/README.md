@@ -6,10 +6,16 @@ The extracted features are also available from http://twanvl.nl/research/domain-
 Needed downloads
 -----
 
-[Keras](https://keras.io/) and [tensorflow](https://www.tensorflow.org/).
-
 Download office images: https://cs.stanford.edu/~jhoffman/domainadapt/
 
 Download caltech images: http://www.vision.caltech.edu/Image_Datasets/Caltech101/#Download
+
+Python dependencies:
+ * [keras](https://keras.io/)
+ * [tensorflow](https://www.tensorflow.org/).
+ * progressbar2
+ * h5py
+ * matplotlib
+ * scipy
 
 

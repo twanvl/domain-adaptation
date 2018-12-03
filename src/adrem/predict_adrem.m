@@ -56,7 +56,7 @@ function [y_tgt,ys_tgt,models] = predict_adrem(x_src,y_src,x_tgt, varargin)
           end
           % sample once without replacement
           % the rest: copy all samples
-          copies = idivide(n_i, length(which_i));
+          copies = floor(n_i / length(which_i));
           idx = [repmat(1:length(which_i), 1, copies), randperm(length(which_i), n_i-copies*length(which_i))];
           which_tgt = [which_tgt; which_i(idx(:))];
         end
