@@ -28,8 +28,7 @@ function results = results_from_papers(data)
   if isequal(data.name, 'office-caltech-standard') && isequal(data.features,'surf') && isequal(data.preprocessing,'norm-row,zscore')
     % Table 1 of [1]: Office-caltech, standard protocol
     % NA = no adaptation
-    results.methods = {'NA','SVMA','DAM','GFK','TCA','CORAL'};
-    results.accs    = ...
+    accs = ...
       [35.8 34.8 34.9 38.3 40.0 39.9 40.3 ... % A→C
       ;33.1 34.1 34.3 37.9 39.1 38.8 38.3 ... % A→D
       ;24.9 32.5 32.5 39.8 40.1 39.6 38.7 ... % A→W
@@ -44,8 +43,9 @@ function results = results_from_papers(data)
       ;78.9 75.0 68.3 74.6 77.5 77.9 84.9 ... % W→D
       ;37.8 41.0 40.2 43.4 45.7 45.9 46.7 ... % avg
       ]' / 100;
-    %results.methods{end+1} = 
-    %results.accs(:,end+1)  = 
+    results.methods = {'NA','SVMA','DAM','GFK','TCA','CORAL'};
+    perm = permute_results(data,{'A->C','A->D','A->W','C->A','C->D','C->W','D->A','D->C','D->W','W->A','W->C','W->D'});
+    results.accs = accs(perm);
     
   elseif isequal(data.name, 'office')
     % Table 2 of [1]: Office31
@@ -67,41 +67,40 @@ function results = results_from_papers(data)
       which = [];
     end
     results.methods = cellfun(@(x)x(1:end-4),office_31_methods(which),'UniformOutput',false);
-    results.accs = office_31_results(:,which)' / 100;
+    perm = permute_results(data,{'A->D','A->W','D->A','D->W','W->A','W->D'});
+    results.accs = office_31_results(perm,which)' / 100;
     
     % Other results on office dataset
     % From TDS paper [3a]
     if isequal(data.features,'raw')
+      perm = []; % TODO
       results.methods{end+1} = 'DLID'; %  (Chopra et al., 2013)
-      results.accs(end+1,:)  = [nan, 51.9, nan, 78.2, nan, 89.9, nan] / 100;
+      results.accs(end+1,:)  = [nan, 51.9, nan, 78.2, nan, 89.9, nan](perm) / 100;
       results.methods{end+1} = 'DDC'; %  (Tzeng et al., 2014)
-      results.accs(end+1,:)  = [64.4, 61.8, 52.1, 95.0, 52.2, 98.5, 70.7] / 100;
+      results.accs(end+1,:)  = [64.4, 61.8, 52.1, 95.0, 52.2, 98.5, 70.7](perm) / 100;
       results.methods{end+1} = 'DAN'; %  (Long and Wang, 2015)
-      results.accs(end+1,:)  = [67.0, 68.5, 54.0, 96.0, 53.1, 99.0, 72.9] / 100;
+      results.accs(end+1,:)  = [67.0, 68.5, 54.0, 96.0, 53.1, 99.0, 72.9](perm) / 100;
       results.methods{end+1} = 'DANN';
-      results.accs(end+1,:)  = [nan, 73.0, nan, 96.4, nan, 99.2, nan] / 100;
+      results.accs(end+1,:)  = [nan, 73.0, nan, 96.4, nan, 99.2, nan](perm) / 100;
       results.methods{end+1} = 'BP';
-      results.accs(end+1,:)  = [72.8, 73.0, 54.4, 96.4, 53.6, 99.2, 74.9] / 100;
+      results.accs(end+1,:)  = [72.8, 73.0, 54.4, 96.4, 53.6, 99.2, 74.9](perm) / 100;
       %results.methods{end+1} = 'TDS';
       %results.accs(end+1,:)  = [84.1, 81.1, 58.3, 96.4, 63.8, 99.2, 80.5] / 100;
       % [2] Long et al 2016
-      order = {'A->W', 'D->W', 'W->D', 'A->D', 'D->A', 'W->A', 'Z:avg'};
-      [~,perm]=sort(order);
+      perm = permute_results(data,{'A->W', 'D->W', 'W->D', 'A->D', 'D->A', 'W->A', 'Z:avg'});
       results.methods{end+1} = 'RevGrad';
       results.accs(end+1,:)  = [73.0, 96.4, 99.2, nan, nan, nan, nan](perm) / 100;
       results.methods{end+1} = 'RTN';
       results.accs(end+1,:)  = [73.3, 96.8, 99.6, 71.0, 50.5, 51.0, 73.7](perm) / 100;
       %results.accs_std(end+1,:) = [0.3,0.2,0.1,0.2,0.3,0.1] / 100;
       % [3]
-      order = {'A->W', 'D->W', 'W->D', 'W->A', 'A->D', 'D->A', 'Z:avg'};
-      [~,perm]=sort(order);
+      perm = permute_results(data,{'A->W', 'D->W', 'W->D', 'W->A', 'A->D', 'D->A', 'Z:avg'});
       results.methods{end+1} = 'TDS';
       results.accs(end+1,:)  = [.811,.964,.992,.638,.841,.583, nan](perm);
     end
     if isequal(data.features,'raw-resnet')
       % [4], Table 1, resnet results
-      order = {'A->W', 'D->W', 'W->D', 'W->A', 'A->D', 'D->A', 'Z:avg'};
-      [~,perm]=sort(order);
+      perm = permute_results(data,{'A->W', 'D->W', 'W->D', 'A->D', 'D->A', 'W->A', 'Z:avg'});
       results.methods{end+1} = 'ResNet';
       results.accs(end+1,:)  = [68.4, 96.7, 99.3, 68.9, 62.5, 60.7, 76.1](perm) / 100;
       results.methods{end+1} = 'TCA'; % Pan et al., 2011
@@ -126,8 +125,10 @@ function results = results_from_papers(data)
   elseif isequal(data.name, 'office-caltech')
     if isequal(data.features,'surf') && isequal(data.preprocessing,'norm-row,zscore')
       % Table 3 of [1]: Office-caltech, full
+      order = {};
       results.methods = {'NA','SA','GFK','TCA','CORAL'};
-      results.accs = ...
+      perm = permute_results(data,{'A->C','A->D','A->W','C->A','C->D','C->W','D->A','D->C','D->W','W->A','W->C','W->D'});
+      accs = ...
         [41.7 37.4 41.9 35.2 45.1 ... % A→C
         ;44.6 36.3 41.4 39.5 39.5 ... % A→D
         ;31.9 39.0 41.4 29.5 44.4 ... % A→W
@@ -142,10 +143,10 @@ function results = results_from_papers(data)
         ;78.3 62.4 79.6 74.5 86.6 ... % W→D
         ;41.1 41.5 46.4 42.8 48.8 ... % AVG
         ]' / 100;
+      results.accs = accs(:,perm);
     elseif isequal(data.features,'raw')
       % table 2 of [2]
-      order = {'A→W','D→W','W→D','A→D','D→A','W→A','A→C','W→C','D→C','C→A','C→W','C→D','z:Avg'};
-      [~,perm]=sort(order);
+      perm = permute_results(data,{'A→W','D→W','W→D','A→D','D→A','W→A','A→C','W→C','D→C','C→A','C→W','C→D','z:Avg'});
       results.methods{end+1} = 'RTN';
       results.accs(end+1,:)  = [95.2, 99.2, 100, 95.5, 93.8, 92,5, 88.1, 86.6, 84.6, 93.7, 96.9, 94.2, 93.4](perm) / 100;
     end
@@ -153,7 +154,8 @@ function results = results_from_papers(data)
   elseif isequal(data.name, 'cross-dataset-testbed') && isequal(data.features,'decaf-fc7') && isequal(data.preprocessing,'zscore')
     % Table 4 of [1]: Cross dataset testbed
     results.methods = {'NA','SA','GFK','TCA','CORAL'};
-    results.accs = ...
+    perm = permute_results(data,{'C->I','C->S','I->C','I->S','S->C','S->I','z:Avg'});
+    accs = ...
       [66.1 43.7 52   48.6 66.2 ... % C→I
       ;21.9 13.9 18.6 15.6 22.9 ... % C→S
       ;73.8 52.0 58.5 54.0 74.7 ... % I→C
@@ -162,22 +164,26 @@ function results = results_from_papers(data)
       ;22.4 14.3 17.4 12.0 25.2 ... % S→I
       ;38.5 25.8 31.3 26.6 40.2 ... % AVG
       ]' / 100;
+    results.accs = accs(:,perm);
     
   elseif isequal(data.name, 'amazon-standard-subset') && isequal(data.features,'400') && isequal(data.preprocessing,'zscore')
     % Table 5 of [1]: Amazon
     results.methods = {'NA','TCA','SA','GFS','GFK','SCL','KMM','CORAL'};
-    results.accs = ...
+    perm = permute_results(data,{'K->D','D->B','B->E','E->K','avg'});
+    accs = ...
       [72.2 60.4 78.4 67.9 69.0 72.8 72.2 73.9 ... % K→D
       ;76.9 61.4 74.7 68.6 71.3 76.2 78.6 78.3 ... % D→B
       ;74.7 61.3 75.6 66.9 68.4 75.0 76.9 76.3 ... % B→E
       ;82.8 68.7 79.3 75.1 78.2 82.9 83.5 83.6 ... % E→K
       ;76.7 63.0 77.0 69.6 71.7 76.7 77.8 78.0 ... % AVG
       ]' / 100;
+    results.accs = accs(:,perm);
     
   elseif isequal(data.name, 'imdb')
     % Results from http://jmlr.org/papers/volume17/15-206/15-206.pdf
     results.methods = {'S-SVM','S-LR','KMM','SCL','SA','GFK','TCA','FLDA-Q','FLDA-L','T-LR'};
-    results.accs = ...
+    perm = permute_results(data,{'A->F','A->W','F->W','F->A','W->A','W->F','z:Avg'});
+    accs = ...
       [.145,.136,.133,.133,.184,.276,.230,.135,.136,.196 ... % A→F
       ;.158,.155,.155,.165,.163,.249,.266,.158,.154,.163 ... % A→W
       ;.256,.206,.208,.206,.182,.289,.355,.205,.202,.163 ... % F→W
@@ -185,6 +191,7 @@ function results = results_from_papers(data)
       ;.168,.160,.159,.159,.167,.238,.222,.155,.157,.169 ... % W→A
       ;.340,.167,.163,.163,.232,.292,.203,.172,.159,.196 ... % W→F
       ]';
+    results.accs = accs(:,perm);
     
   else
     results.methods = {};
@@ -192,3 +199,16 @@ function results = results_from_papers(data)
   end
 end
 
+function perm = permute_results(data, order)
+  perm = zeros(1,data.num_domain_pairs);
+  for i=1:data.num_domain_pairs
+    src = data.domain_pairs(i,1);
+    tgt = data.domain_pairs(i,2);
+    pair = [toupper(data.domains{src}(1)), '->', toupper(data.domains{tgt}(1))];
+    idx = find(strcmp(order,pair));
+    if isempty(idx)
+      error('Domain pair not found: %s', pair)
+    end
+    perm(i) = idx;
+  end
+end

@@ -105,8 +105,8 @@ function data = load_dataset(data, features, preprocessing)
   
   if ~isfield(data, 'domain_pairs')
     data.domain_pairs = zeros(0,2);
-    for src = 1:numel(data.domains)
-      for tgt = 1:numel(data.domains)
+    for tgt = 1:numel(data.domains)
+      for src = 1:numel(data.domains)
         if src ~= tgt
           data.domain_pairs(end+1,:) = [src,tgt];
         end

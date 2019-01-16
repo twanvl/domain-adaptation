@@ -84,7 +84,7 @@ function results = run_methods(data, methods, varargin)
     if isfield(methods{i},'dummy')
       for j=1:numel(paper_results.methods)
         if isequal(methods{i}.name, paper_results.methods{j})
-          dummy_results(i,:) = paper_results.accs(j,1:end-1);
+          dummy_results(i,:) = paper_results.accs(j,:);
           break;
         end
       end
