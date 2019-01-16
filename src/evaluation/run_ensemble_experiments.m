@@ -24,6 +24,8 @@ function run_ensemble_experiments(varargin)
   write_results(results, opts);
   results = run_on(load_dataset('office-caltech','resnet50'), opts);
   write_results(results, opts);
+  results = run_on(load_dataset('office-caltech','resnet50-no-augment'), opts);
+  write_results(results, opts);
 end
 
 function results = run_on(data, opts)
