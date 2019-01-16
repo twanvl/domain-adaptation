@@ -11,6 +11,7 @@ function methods = all_methods_literature(varargin)
   if ~isfield(opts,'include_tca') opts.include_tca = false; end
   if ~isfield(opts,'include_gfk') opts.include_gfk = false; end
   if ~isfield(opts,'include_flda') opts.include_flda = true; end
+  if ~isfield(opts,'include_dasvm') opts.include_dasvm = true; end
   
   methods = {};
   
@@ -48,6 +49,12 @@ function methods = all_methods_literature(varargin)
       'name',   'FLDA-Q',...
       'method', @predict_flda_cv,...
       'args',   {{'loss','qd', 'distribution','dropout'}});
+  end
+  if 1
+    methods{end+1} = struct(...
+      'name',     'DASVM',...
+      'method',   @predict_dasvm_ova,...
+      'args',     {{'use_source_C',1,'num_folds',10}});
   end
   if 1
     methods{end+1} = struct(...
